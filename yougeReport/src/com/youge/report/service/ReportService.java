@@ -4,5 +4,5 @@ import java.util.List;
 
 public abstract class ReportService {
 
-	public abstract List getList();
+	public abstract <T> List<T> getList();
 }
