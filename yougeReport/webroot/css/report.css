@@ -1,0 +1,15 @@
+ .wrapper {
+    width: 990px;
+    margin: 0 auto;
+} 
+.title {
+    width: 800px;
+    margin: 20px auto;
+    font: 18px bold;
+    text-align:center;
+    
+}
+.footer{
+	float: right;
+	margin-top: 5px
+}

@@ -4,8 +4,8 @@
 		<Console name="Console" target="SYSTEM_OUT">
 			<PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} %L %M - %msg%n" />
 		</Console>
-		<RollingFile name="RollingFile" fileName="/usr/local/logs/app.log"
-			filePattern="/usr/local/logs/$${date:yyyy-MM}/app-%d{MM-dd-yyyy}-%i.log.gz">
+		<RollingFile name="RollingFile" fileName="/usr/local/logs/yougereport.log"
+			filePattern="/usr/local/logs/$${date:yyyy-MM}/yougereport-%d{MM-dd-yyyy}-%i.log.gz">
 			<PatternLayout
 				pattern="%d{yyyy.MM.dd HH:mm:ss.SSS} %-5level %logger{36} %L %M - %msg%xEx%n" />
 			<SizeBasedTriggeringPolicy size="50 MB" />
