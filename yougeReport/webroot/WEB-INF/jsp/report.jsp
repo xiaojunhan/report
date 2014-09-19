@@ -7,18 +7,25 @@
     <title>${title}</title>
     <link href="${path}/css/one.css" rel="stylesheet">
     <link href="${path}/css/report.css" rel="stylesheet">
+    <link href="${path}/css/layer.css" rel="stylesheet">
     <script type="text/javascript">
+        document.createElement("section");
+    	function showLayer(){
+    		document.getElementById("layermbox").style.display="";
+    	}
     	function exportreport(){
-    		if(window.confirm("确定要导出该报表吗?")){
-    			alert("s");
-    		}
+    		document.getElementById("layermbox").style.display="none";
+    		document.getElementById("exportform").submit();
+    	}
+    	function closeLayer(){
+    		document.getElementById("layermbox").style.display="none";
     	}
     </script>
     </head>
     <body>
     <div class="wrapper">
     	<div class="title">${title}</div>
-    	<a href="javascript:exportreport()" style="float: right;position: relative;margin-top: -40px"><img src="${path}/imgs/excel.png"/></a>
+    	<a href="javascript:showLayer()" style="float: right;position: relative;margin-top: -40px"><img src="${path}/imgs/excel.png"/></a>
     </div>
     <div class="wrapper">
         <table class="ui-table">
@@ -43,8 +50,16 @@
 	        		</c:if>
 	        		<c:if test="${empty tbody}">
 	        			<tr>
-	        				<td colspan="${collen}">没有查询到记录</td>
+	        				<td colspan="${collen}" align="center">没有查询到记录</td>
 	        			</tr>
+	        		</c:if>
+	        		
+	        		<c:if test="${! empty tfoot}">
+		        		<tr>
+		        		 	<c:forEach items="${tfoot}" var="td">
+		        				<td>${td}</td>
+		        			</c:forEach>
+		        		</tr>
 	        		</c:if>
         		</tbody>
         </table>
@@ -52,10 +67,26 @@
 	<%@include file="/WEB-INF/jsp/common/page.jsp"%>
 	<div class="fn-clear"></div>
     <div class="wrapper"><div class="footer">${footer}</div></div>
-	    <form id="exportform" action="${path}/export.do" method="get" style="display: none;">
-			<c:forEach var="pageParameter" items="${param}">
-				<input type="hidden" name="${pageParameter.key}" value="${pageParameter.value}">
-	      	</c:forEach>
-		</form>
+    <form id="exportform" action="${path}/export.do" method="get" style="display: none;">
+		<c:forEach var="pageParameter" items="${param}">
+			<input type="hidden" name="${pageParameter.key}" value="${pageParameter.value}">
+      	</c:forEach>
+	</form>
+	
+	<div id="layermbox" class="layermbox layermbox0 layermshow" style="display: none;">
+		<div class="laymshade" onclick="closeLayer()"></div>
+		<div class="layermmain">
+			<section>
+				<div class="layermchild layermanim">
+					<h3 style="">提示</h3>
+					<div class="layermcont">确定要导出该报表吗?</div>
+					<div class="layermbtn">
+						<span onclick="closeLayer()">取消</span>
+						<span onclick="exportreport()">确定</span>
+					</div>
+				</div>
+			</section>
+		</div>
+	</div>
     </body>
 </html>

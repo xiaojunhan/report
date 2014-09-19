@@ -12,14 +12,14 @@ import com.youge.report.util.DateUtil;
 public class CoopDayReport extends ReportService{
 	
 	private static final String[] head = {"ID","用户名","时间"};
-	@Override
-	public void init(HttpServletRequest req) throws DbException {
-		//check auth
-		String sql = "select id,address,ntime from test_report where id > ?";
-		String countsql = "select count(*) from test_report where id > ?";
-		Object[] params = {1};
-		doSql(sql,params,countsql,params);
-	}
+//	@Override
+//	public void init(HttpServletRequest req) throws Exception {
+//		//check auth
+//		String sql = "select id,address,ntime from test_report where id > ?";
+//		String countsql = "select count(*) from test_report where id > ?";
+//		Object[] params = {1};
+//		doSql(sql,params,countsql,params);
+//	}
 	@Override
 	public String getTitle() {
 		return "网点日报 2014-09-09";
@@ -33,14 +33,19 @@ public class CoopDayReport extends ReportService{
 	 * 若不需要处理 直接返回
 	 * @return
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
-	public List<?> getTbody() {
+	public List<String[]> getTbody() {
+//		return null;
 		return getTbodyList();
 	}
 	@Override
 	public String[] getTfoot() {
 		//最后一页 才有footer
 		return null;
+//		String[] foot = {"总计","11","11"};
+		
+//		return foot;
 	}
 	@Override
 	public String getFooter() {

@@ -12,7 +12,7 @@
 		</RollingFile>
 	</appenders>
 	<loggers>
-		<logger name="com.smartbox" level="info" additivity="false">
+		<logger name="com.youge" level="info" additivity="false">
 			<appender-ref ref="Console" />
 			<appender-ref ref="RollingFile" />
 		</logger>
@@ -26,10 +26,6 @@
 			<appender-ref ref="RollingFile" />
 		</logger>
 		<logger name="net.rubyeye.xmemcached" level="info" additivity="false">
-			<appender-ref ref="Console" />
-			<appender-ref ref="RollingFile" />
-		</logger>
-		<logger name="com.atomikos.datasource.pool.ConnectionPool" level="info" additivity="false">
 			<appender-ref ref="Console" />
 			<appender-ref ref="RollingFile" />
 		</logger>
