@@ -16,9 +16,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import jxl.CellView;
 import jxl.Workbook;
 import jxl.format.Alignment;
@@ -30,10 +27,12 @@ import jxl.write.WritableFont;
 import jxl.write.WritableSheet;
 import jxl.write.WritableWorkbook;
 
-import com.youge.report.exception.DbException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import com.youge.report.model.ReportInfo;
 import com.youge.report.service.ReportService;
 import com.youge.report.service.ReportServiceFactory;
-import com.youge.report.util.JdbcUtil;
 import com.youge.report.util.NumberUtil;
 import com.youge.report.util.StringUtil;
 /**
@@ -47,11 +46,11 @@ public class ExportServlet extends HttpServlet{
 	 */
 	private static final long serialVersionUID = 5876152456587859819L;
 	
-	private static  Logger logger = LogManager.getLogger(JdbcUtil.class);
+	private static  Logger logger = LogManager.getLogger(ExportServlet.class);
 	/**
 	 * 存放生成的excel文件
 	 */
-//	private static final String REPORT_PATH = "/usr/local/app/reportfile/";
+	private static final String REPORT_PATH = "/usr/local/app/reportfile/";
 	private static final String TEMP_PATH = "/usr/local/app/reportfiletemp/";
 	
 	private static final String SIZE_CODE = "GBK"; 
@@ -82,22 +81,30 @@ public class ExportServlet extends HttpServlet{
 		if(StringUtil.isEmpty(spage)&&StringUtil.isEmpty(epage)){
 			rs.setNeedCut(false);
 		}
-		try {
-			rs.init(req);
-		} catch (Exception e) {
-			//访问异常
-			req.setAttribute(MESSAGE, "服务器异常，请稍后再试");
-			req.getRequestDispatcher("/WEB-INF/jsp/common/error.jsp").forward(req, resp);
-			return;
-		}
 		
-		File file = createExcel(rs);
+		String key = rs.getKeyByRequest(req);
+		//TODO 未来这里弄个文件夹 不要都放一个目录下
+		String filePath = REPORT_PATH+report+"-"+key;
+		File reportFile = new File(filePath);
+		if(!reportFile.exists()){//文件存在 直接下载
+			try {
+				rs.initReportInfo(req);
+			} catch (Exception e) {
+				//访问异常
+				req.setAttribute(MESSAGE, "服务器异常，请稍后再试");
+				req.getRequestDispatcher("/WEB-INF/jsp/common/error.jsp").forward(req, resp);
+				return;
+			}
+			reportFile = createExcel(rs,reportFile);
+		}else{
+			logger.info("file exsit,"+filePath);
+		}
 		String fileName = getFileName(req,rs.getTitle(),"xls");
         resp.setContentType("application/octet-stream");
         resp.addHeader("Content-Disposition", "attachment; filename=" + fileName);
-        resp.addHeader("Content-Length" ,Long.toString(file.length()));  
+        resp.addHeader("Content-Length" ,Long.toString(reportFile.length()));  
         ServletOutputStream servletOutputStream=resp.getOutputStream();
-        FileInputStream fileInputStream=new FileInputStream(file);
+        FileInputStream fileInputStream=new FileInputStream(reportFile);
         BufferedInputStream bufferedInputStream=new BufferedInputStream(fileInputStream);
         int size=0;
         byte[] b=new byte[4096];
@@ -130,12 +137,16 @@ public class ExportServlet extends HttpServlet{
 		return name + "." + ext;
 	}
 	
-	public File createExcel(ReportService rs) throws UnsupportedEncodingException{
+	public File createExcel(ReportService rs,File reportFile) throws UnsupportedEncodingException{
 		String title = rs.getTitle();
 		String[] head = rs.getThead();
 		String[] foot = rs.getTfoot();
 		String footer = rs.getFooter();
-		List<String[]> bodyList = rs.getTbody();
+		ReportInfo ri = rs.getReportInfo();
+		List<String[]> bodyList = null;//TODO rs.getTbody();
+		if(ri!=null){
+			bodyList = ri.getReportList();
+		}
 		int collen = 0;
 		if(head!=null && head.length>0){
 			collen = head.length-1;
@@ -163,9 +174,12 @@ public class ExportServlet extends HttpServlet{
         try {
             os = new FileOutputStream(tempName);
             WritableWorkbook wwb = Workbook.createWorkbook(os);
-            wwb.setProtected(true);//设为只读
+            
             WritableSheet sheet = wwb.createSheet("report", 0);
-            sheet.getSettings().setProtected(true);//设为只读
+            if(rs.isReadonly()){
+            	wwb.setProtected(true);//设为只读
+            	sheet.getSettings().setProtected(true);//设为只读
+            }
             WritableFont wfTitle = new jxl.write.WritableFont(
                     WritableFont.ARIAL, 18, WritableFont.BOLD, false);
             WritableCellFormat wcfTitle = new WritableCellFormat(wfTitle);
@@ -280,6 +294,8 @@ public class ExportServlet extends HttpServlet{
 				}
             }
         }
-		return new File(tempName);
+        File tempFile = new File(tempName);
+        tempFile.renameTo(reportFile);
+		return reportFile;
 	}
 }

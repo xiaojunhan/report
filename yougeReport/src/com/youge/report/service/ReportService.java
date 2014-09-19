@@ -1,5 +1,6 @@
 package com.youge.report.service;
 
+import java.util.Enumeration;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -8,7 +9,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.youge.report.Constants;
-import com.youge.report.exception.DbException;
 import com.youge.report.model.PageInfo;
 import com.youge.report.model.ReportInfo;
 import com.youge.report.util.HttpUtil;
@@ -17,109 +17,69 @@ import com.youge.report.util.MemCacheUtil;
 import com.youge.report.util.StringUtil;
 
 public abstract class ReportService {
-	private int page;
-	private int psize;
-	private int pageCount;
-	private int totalCount;
-	private int spage=-1;//开始页 导出文件时使用
-	private int epage=-1;//结束页 导出文件时使用
+
 	private boolean needCut = true;//导出时 不需要分页的情况
-	private List<String[]> tbodyList;
+	private boolean readonly = true;//导出文件是否为只读
 	private HttpServletRequest request;
+	private ReportInfo reportInfoDb;
+	private ReportInfo reportInfoCache;
+	
 	protected static JdbcUtil jdbcUtil = new JdbcUtil(Constants.DATA_SOURCE_ID);
 	private static  Logger logger = LogManager.getLogger(ReportService.class);
-//	protected Map<String,String> getRequestMap(HttpServletRequest request){
-//		Map<String,String> map = new HashMap<String,String>();
-//		Enumeration<String> e = request.getParameterNames();
-//		while(e.hasMoreElements()){
-//			String name = e.nextElement();
-//			String value = request.getParameter(name);
-//			map.put(name, value);
-//		}
-//		return map;
-//	}
-	public void init(HttpServletRequest req){
-		String pageStr = req.getParameter("page");
-		String psizeStr = req.getParameter("psize");
-		if(StringUtil.isNotEmpty(pageStr)){
-			try{
-				page = Integer.parseInt(pageStr);
-			}catch(Exception e){}
-		}
-		if(page<1){
-			page = 1;
-		}
-		if(StringUtil.isNotEmpty(psizeStr)){
-			try{
-				psize = Integer.parseInt(psizeStr);
-			}catch(Exception e){}
-		}
-		if(psize==0){
-			psize = 15;
-		}
-//		init(req);
+	 
+	/** 数据初始化 **/
+	protected abstract void init()throws Exception ;
+	
+	public abstract String getTitle();//标题
+	
+	public abstract String[] getThead();//表头
+//	public abstract <T> List<T> getTbody();
+	/**
+	 * 做数据库中查询出的数据做二次处理
+	 * @return
+	 */
+	protected abstract ReportInfo getReportInfoOpr();
+	
+	/** 最后一页 才有footer **/
+	public abstract String[] getTfoot();
+	
+	/** 每页都有 **/
+	public abstract String getFooter();
+	
+	/** 默认返回页 **/
+	public String getJsp(){
+		return "/WEB-INF/jsp/report.jsp";
 	}
 	public void doSql(String sql,Object[] param1) throws Exception{
 		setNeedCut(false);//调用这个方法说明不需要分页
-		//TODO 根据 String sql,Object[] param1 做缓存
-		
-		StringBuilder sb = new StringBuilder();
-		sb.append("YOUGE_REPORT_DOSQL_SIMPLE_").append(MemCacheUtil.getKey(sql,param1));
-		String key = sb.toString();
-		logger.info("key=="+key);
-		ReportInfo reportInfo = MemCacheUtil.get(key);
-		if(reportInfo!=null){
-			setTbodyList(reportInfo.getReportList());
-			return;
-		}
-		
 		List<String[]> list = jdbcUtil.getListp(sql, String[].class, param1);
-		setTbodyList(list);
-		
-		reportInfo = new ReportInfo();
-		reportInfo.setReportList(list);
-		MemCacheUtil.set(key, 60*30, reportInfo);//缓存30分钟
+		ReportInfo ri = new ReportInfo();
+		ri.setReportList(list);
+		setReportInfoDb(ri);
 	}
 	
-	public void doSql(String sql,Object[] param1,String countSql,Object[] param2) throws Exception{
+	public void doSql(HttpServletRequest req,String sql,Object[] param1,String countSql,Object[] param2) throws Exception{
 		if(!needCut){//不需要分页
 			doSql(sql, param1);
 			return;
 		}
-		StringBuilder sb = new StringBuilder();
-		sb.append("YOUGE_REPORT_DOSQL_")
-		.append(needCut).append("_")
-		.append(page).append("_")
-		.append(psize).append("_")
-		.append(spage).append("_")
-		.append(epage).append("_")
-		.append(MemCacheUtil.getKey(sql,param1,countSql,param2));
-		String key = sb.toString();
-		
-		logger.info("key=="+key);
-		ReportInfo reportInfo = MemCacheUtil.get(key);
-		if(reportInfo!=null){
-//			logger.info(reportInfo.toString());
-			setTbodyList(reportInfo.getReportList());
-			setTotalCount(reportInfo.getPageInfo().getTotalCount());
-			setPage(reportInfo.getPageInfo().getPage());
-			setPageCount(reportInfo.getPageInfo().getPageCount());
-			return;
-		}
+		int page = getFromRequest(req,"page",1);
+		page = page < 1 ? 1 : page;
+		int psize = getFromRequest(req,"psize",15);
+		int spage = getFromRequest(req,"spage",-1);
+		int epage = getFromRequest(req,"epage",-1);
 		int count = jdbcUtil.getIntp(countSql,param2);
-		setTotalCount(count);
 		if(count<=0){
-			setTbodyList(null);
 			return;
 		}
-		pageCount = (count % psize == 0) ? count / psize : count / psize + 1;
+		int pageCount = (count % psize == 0) ? count / psize : count / psize + 1;
 		if(page>pageCount){
 			page = pageCount;
 		}
 		int start = 0;
 		int num = 0;
 		if(spage==-1 && epage==-1){
-			start = getPsize() * (getPage() - 1);
+			start = psize * (page - 1);
 			num = psize;
 		}else{
 			if(spage<1){spage=1;}
@@ -136,49 +96,41 @@ public abstract class ReportService {
 		}
 		sql = sql + " limit " + start + " , "+num;
 		List<String[]> list = jdbcUtil.getListp(sql, String[].class, param1);
-		setTbodyList(list);
 		
-		reportInfo = new ReportInfo();
+		ReportInfo ri = new ReportInfo();
 		PageInfo pageInfo = new PageInfo();
 		pageInfo.setPage(page);
 		pageInfo.setPageCount(pageCount);
 		pageInfo.setTotalCount(count);
-		reportInfo.setReportList(list);
-		reportInfo.setPageInfo(pageInfo);
-		MemCacheUtil.set(key, 60*30, reportInfo);//缓存30分钟
+		ri.setReportList(list);
+		ri.setPageInfo(pageInfo);
+		setReportInfoDb(ri);
 	}
-	public int getPage() {
-		return page;
+	/**
+	 * 对getReportInfoOpr中数据做缓存处理
+	 * @return
+	 */
+	public void initReportInfo(HttpServletRequest req)throws Exception{
+		setRequest(req);
+		String report = req.getParameter("report");
+		StringBuilder sb = new StringBuilder();
+		sb.append("YOUGE_REPORT_INFO_")
+		.append(report).append("_")
+		.append(needCut).append("_")
+		.append(getKeyByRequest(req));
+		String key = sb.toString();
+		logger.info("key=="+key);
+		ReportInfo ri = MemCacheUtil.get(key);
+		if(ri==null){
+			init();
+			ri = getReportInfoOpr();
+			if(ri!=null){
+				MemCacheUtil.set(key, 30*60, ri);
+			}
+		}
+		setReportInfoCache(ri);
 	}
-	private void setPage(int page) {
-		this.page = page;
-	}
-	public int getPsize() {
-		return psize;
-	}
-	public void setPsize(int psize) {
-		this.psize = psize;
-	}
-	
-//	public abstract void init(HttpServletRequest req)throws Exception ;
-	public abstract String getTitle();//标题
-	
-	public abstract String[] getThead();//表头
-	public abstract <T> List<T> getTbody();
-	public abstract String[] getTfoot();
-	
-	public abstract String getFooter();
-	
-	public String getJsp(){
-		return "/WEB-INF/jsp/report.jsp";
-	}
-	
-	public List<?> getTbodyWithCache(){
-		
-		List<?> list = getTbody();
-		
-		return list;
-	}
+
 	/**
 	 * 是否有权限
 	 * @return
@@ -208,40 +160,73 @@ public abstract class ReportService {
 		}
 		return false;
 	}
-	protected List<String[]> getTbodyList() {
-		return tbodyList;
+	/**
+	 * 
+	 * @param request
+	 * @param key
+	 * @param defau 默认值
+	 * @return
+	 */
+	public int getFromRequest(HttpServletRequest request,String key,int defau){
+		String str = request.getParameter(key);
+		if(StringUtil.isEmpty(str)){
+			return defau;
+		}
+		int temp = defau;
+		try{
+			temp = Integer.parseInt(str);
+		}catch(Exception e){}
+		return temp;
 	}
-	private void setTbodyList(List<String[]> tbodyList) {
-		this.tbodyList = tbodyList;
+	
+	public String getKeyByRequest(HttpServletRequest request){
+		Enumeration<String> e = request.getParameterNames();
+		StringBuilder sb = new StringBuilder();
+		while(e.hasMoreElements()){
+			String name = e.nextElement();
+			String value = request.getParameter(name);
+			if(!"token".equals(name)){
+				sb.append(name).append("=").append(value).append("&");
+			}
+		}
+		return StringUtil.MD5(sb.toString());
 	}
-	public final int  getTotalCount() {
-		return totalCount;
-	}
-	public final void setTotalCount(int totalCount) {
-		this.totalCount = totalCount;
-	}
-	public int getPageCount() {
-		return pageCount;
-	}
-	public void setPageCount(int pageCount) {
-		this.pageCount = pageCount;
-	}
+	
 	public boolean isNeedCut() {
 		return needCut;
 	}
 	public void setNeedCut(boolean needCut) {
 		this.needCut = needCut;
 	}
-	public void setSpage(int spage) {
-		this.spage = spage;
-	}
-	public void setEpage(int epage) {
-		this.epage = epage;
-	}
 	public HttpServletRequest getRequest() {
 		return request;
 	}
 	public void setRequest(HttpServletRequest request) {
 		this.request = request;
+	}
+
+	protected ReportInfo getReportInfoDb() {
+		return reportInfoDb;
+	}
+	private void setReportInfoDb(ReportInfo reportInfoDb) {
+		this.reportInfoDb = reportInfoDb;
+	}
+	
+	public ReportInfo getReportInfo() {
+		return reportInfoCache;
+	}
+	private void setReportInfoCache(ReportInfo reportInfoCache) {
+		this.reportInfoCache = reportInfoCache;
+	}
+
+	public boolean isReadonly() {
+		return readonly;
+	}
+	/**
+	 * 设置导出文件是否为只读
+	 * @param readonly
+	 */
+	public void setReadonly(boolean readonly) {
+		this.readonly = readonly;
 	}
 }

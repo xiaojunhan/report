@@ -20,9 +20,20 @@
     	function closeLayer(){
     		document.getElementById("layermbox").style.display="none";
     	}
+    	function showHeight(){
+    		var height = 0;
+    		//if(document.documentElement){
+    		//	height = document.documentElement.clientHeight;
+    		//}else{
+    			height = document.body.clientHeight;
+    		//}
+    		//alert("height="+height);
+    		var webserver = document.getElementById("webserver").value;
+    		document.getElementById("proxyFrame").src = webserver+"/html/proxy.html#"+height;
+    	}
     </script>
     </head>
-    <body>
+    <body onload="showHeight()">
     <div class="wrapper">
     	<div class="title">${title}</div>
     	<a href="javascript:showLayer()" style="float: right;position: relative;margin-top: -40px"><img src="${path}/imgs/excel.png"/></a>
@@ -74,7 +85,6 @@
 	</form>
 	
 	<div id="layermbox" class="layermbox layermbox0 layermshow" style="display: none;">
-		<div class="laymshade" onclick="closeLayer()"></div>
 		<div class="layermmain">
 			<section>
 				<div class="layermchild layermanim">
@@ -88,5 +98,7 @@
 			</section>
 		</div>
 	</div>
+	<input id="webserver" type="hidden" value="${WEB_SERVER}">
+	<iframe id="proxyFrame" width="0" height="0" style="display: none" src=""></iframe>
     </body>
 </html>
