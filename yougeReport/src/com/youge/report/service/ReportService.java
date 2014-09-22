@@ -59,11 +59,12 @@ public abstract class ReportService {
 		setReportInfoDb(ri);
 	}
 	
-	public void doSql(HttpServletRequest req,String sql,Object[] param1,String countSql,Object[] param2) throws Exception{
+	public void doSql(String sql,Object[] param1,String countSql,Object[] param2) throws Exception{
 		if(!needCut){//不需要分页
 			doSql(sql, param1);
 			return;
 		}
+		HttpServletRequest req = getRequest();
 		int page = getFromRequest(req,"page",1);
 		page = page < 1 ? 1 : page;
 		int psize = getFromRequest(req,"psize",15);

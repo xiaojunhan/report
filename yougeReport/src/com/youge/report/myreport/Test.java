@@ -21,7 +21,7 @@ public class Test extends ReportService{
 		String sql = "select id,address,ntime from test_report where id > ?";
 		String countsql = "select count(*) from test_report where id > ?";
 		Object[] params = {1};
-		doSql(req,sql,params,countsql,params);
+		doSql(sql,params,countsql,params);
 	}
 	@Override
 	public String getTitle() {
