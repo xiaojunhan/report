@@ -8,7 +8,7 @@ import com.youge.report.model.ReportInfo;
 import com.youge.report.service.ReportService;
 import com.youge.report.util.DateUtil;
 
-public class CoopDayReport extends ReportService{
+public class Test extends ReportService{
 	private static final String[] head = {"ID","用户名","时间"};
 	@Override
 	public boolean checkAuth(HttpServletRequest req){

@@ -90,9 +90,10 @@ public class MemCacheUtil {
 	}
 	
 	public static void main(String[] args) throws Exception {
-		set("hello1", 0, "Hello,xiaoli");
-        String value = get("hello1");
-        System.out.println("hello=" + value);
+		//set("hello1", 0, "Hello,xiaoli");
+       // String value = get("hello1");
+      //  System.out.println("hello=" + value);
+		invalidateNamespace("report_coop_qu");
         shutdown();
         //不仅如此，xmemcached还支持主辅模式，你可以设置一个memcached的节点的备份节点，当主节点down掉的情况下，
         //会将本来应该发往主节点的请求转发给standby备份节点。使用备份节点的前提是启用failure模式。备份节点设置如下：

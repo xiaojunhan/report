@@ -81,23 +81,37 @@ public class ExportServlet extends HttpServlet{
 		if(StringUtil.isEmpty(spage)&&StringUtil.isEmpty(epage)){
 			rs.setNeedCut(false);
 		}
-		
+		rs.setRequest(req);
 		String key = rs.getKeyByRequest(req);
 		//TODO 未来这里弄个文件夹 不要都放一个目录下
 		String filePath = REPORT_PATH+report+"-"+key;
 		File reportFile = new File(filePath);
-		if(!reportFile.exists()){//文件存在 直接下载
-			try {
-				rs.initReportInfo(req);
-			} catch (Exception e) {
-				//访问异常
-				req.setAttribute(MESSAGE, "服务器异常，请稍后再试");
-				req.getRequestDispatcher("/WEB-INF/jsp/common/error.jsp").forward(req, resp);
-				return;
+		
+		if(reportFile.exists()){
+			if(!rs.isCache()){
+				reportFile.delete();
+				try {
+					rs.initReportInfo();
+				} catch (Exception e) {
+					//访问异常
+					req.setAttribute(MESSAGE, "服务器异常，请稍后再试");
+					req.getRequestDispatcher("/WEB-INF/jsp/common/error.jsp").forward(req, resp);
+					return;
+				}
+				reportFile = createExcel(rs,reportFile);
+			}else{
+				logger.info("use cache,file exsit,"+filePath);
 			}
-			reportFile = createExcel(rs,reportFile);
 		}else{
-			logger.info("file exsit,"+filePath);
+				try {
+					rs.initReportInfo();
+				} catch (Exception e) {
+					//访问异常
+					req.setAttribute(MESSAGE, "服务器异常，请稍后再试");
+					req.getRequestDispatcher("/WEB-INF/jsp/common/error.jsp").forward(req, resp);
+					return;
+				}
+				reportFile = createExcel(rs,reportFile);
 		}
 		String fileName = getFileName(req,rs.getTitle(),"xls");
         resp.setContentType("application/octet-stream");

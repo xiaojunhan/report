@@ -20,6 +20,7 @@ public abstract class ReportService {
 
 	private boolean needCut = true;//导出时 不需要分页的情况
 	private boolean readonly = true;//导出文件是否为只读
+	private boolean cache = true;
 	private HttpServletRequest request;
 	private ReportInfo reportInfoDb;
 	private ReportInfo reportInfoCache;
@@ -110,14 +111,19 @@ public abstract class ReportService {
 	 * 对getReportInfoOpr中数据做缓存处理
 	 * @return
 	 */
-	public void initReportInfo(HttpServletRequest req)throws Exception{
-		setRequest(req);
-		String report = req.getParameter("report");
+	public void initReportInfo()throws Exception{
+		if(!isCache()){
+			init();
+			ReportInfo ri = getReportInfoOpr();
+			setReportInfoCache(ri);
+			return;
+		}
+		String report = getRequest().getParameter("report");
 		StringBuilder sb = new StringBuilder();
 		sb.append("YOUGE_REPORT_INFO_")
 		.append(report).append("_")
 		.append(needCut).append("_")
-		.append(getKeyByRequest(req));
+		.append(getKeyByRequest(getRequest()));
 		String key = sb.toString();
 		logger.info("key=="+key);
 		ReportInfo ri = MemCacheUtil.nsget(report,key);
@@ -192,6 +198,15 @@ public abstract class ReportService {
 		return StringUtil.MD5(sb.toString());
 	}
 	
+	public String getAlink(String href,String value){
+		return getAlink(href, value,"_self");
+	}
+	public String getAlink(String href,String value,String targe){
+		StringBuilder sb = new StringBuilder();
+		sb.append("<a href=\"").append(href).append("\" target=\""+targe+"\">")
+		.append(value).append("</a>");
+		return sb.toString();
+	}
 	public boolean isNeedCut() {
 		return needCut;
 	}
@@ -228,5 +243,13 @@ public abstract class ReportService {
 	 */
 	public void setReadonly(boolean readonly) {
 		this.readonly = readonly;
+	}
+
+	public boolean isCache() {
+		return cache;
+	}
+
+	public void setCache(boolean cache) {
+		this.cache = cache;
 	}
 }

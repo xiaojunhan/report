@@ -45,9 +45,9 @@ public class ReportServlet extends HttpServlet{
 			req.getRequestDispatcher("/WEB-INF/jsp/common/error.jsp").forward(req, resp);
 			return;
 		}
-		
+		rs.setRequest(req);
 		try {
-			rs.initReportInfo(req);
+			rs.initReportInfo();
 		} catch (Exception e) {
 			//访问异常
 			req.setAttribute(MESSAGE, "服务器异常，请稍后再试");
