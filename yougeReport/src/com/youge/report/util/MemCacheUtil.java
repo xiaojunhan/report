@@ -1,11 +1,14 @@
 package com.youge.report.util;
 
 import java.io.IOException;
+import java.util.concurrent.TimeoutException;
 
 import net.rubyeye.xmemcached.MemcachedClient;
 import net.rubyeye.xmemcached.MemcachedClientBuilder;
+import net.rubyeye.xmemcached.MemcachedClientCallable;
 import net.rubyeye.xmemcached.XMemcachedClientBuilder;
 import net.rubyeye.xmemcached.command.BinaryCommandFactory;
+import net.rubyeye.xmemcached.exception.MemcachedException;
 import net.rubyeye.xmemcached.impl.KetamaMemcachedSessionLocator;
 import net.rubyeye.xmemcached.transcoders.SerializingTranscoder;
 import net.rubyeye.xmemcached.utils.AddrUtil;
@@ -46,6 +49,38 @@ public class MemCacheUtil {
 		return memcachedClient.get(key);
 	}
 	
+	public static void nsset(String namespace,final String key,final int exp,final Object value) throws Exception{
+		memcachedClient.withNamespace(namespace,  new MemcachedClientCallable<Object>(){
+			@Override
+			public Void call(MemcachedClient client)
+					throws MemcachedException, InterruptedException,
+					TimeoutException {
+				client.set(key, exp, value);
+				return null;
+			}
+    	});
+	}
+	
+	public static <T> T nsget(String namespace,final String key) throws Exception{
+		T t = memcachedClient.withNamespace(namespace,  new MemcachedClientCallable<T>(){
+			@Override
+			public T call(MemcachedClient client)
+					throws MemcachedException, InterruptedException,
+					TimeoutException {
+				return client.get(key);
+			}
+    	});
+		return t;
+	}
+	/**
+	 * 使命名空间失效
+	 * @param ns
+	 * @throws Exception
+	 */
+	public static void invalidateNamespace(String ns) throws Exception{
+		memcachedClient.invalidateNamespace(ns);
+	}
+	
 	public static void shutdown(){
 		try {
 			memcachedClient.shutdown();
@@ -66,36 +101,36 @@ public class MemCacheUtil {
         //形如“host:port,host:port"的字符串也可以使用在spring配置中，完全兼容1.3之前的格式。
 	}
 
-	public static final int NO_PARAM_KEY = 0;
-	public static final int NULL_PARAM_KEY = 53;
-	
-	/**
-	 * 此处有坑 不要什么参数都往里传
-	 * 不适合 list map等集合类//一定要用的话 自行修改
-	 * @param params
-	 * @return
-	 */
-	public static int getKey(Object... params){
-		if (params.length == 1) {
-			if(params[0] instanceof Object[]){
-				return getKey((Object[])params[0]);
-			}else{
-				return (params[0] == null ? NULL_PARAM_KEY : params[0].hashCode());
-			}
-		}
-		if (params.length == 0) {
-			return NO_PARAM_KEY;
-		}
-		int hashCode = 17;
-		for (Object object : params) {
-			int tempCode = 0;
-			if(object instanceof Object[]){
-				tempCode = getKey((Object[])object);
-			}else{
-				tempCode = (object == null ? NULL_PARAM_KEY : object.hashCode());
-			}
-			hashCode = 31 * hashCode + tempCode;
-		}
-		return Integer.valueOf(hashCode);
-	}
+//	public static final int NO_PARAM_KEY = 0;
+//	public static final int NULL_PARAM_KEY = 53;
+//	
+//	/**
+//	 * 此处有坑 不要什么参数都往里传
+//	 * 不适合 list map等集合类//一定要用的话 自行修改
+//	 * @param params
+//	 * @return
+//	 */
+//	public static int getKey(Object... params){
+//		if (params.length == 1) {
+//			if(params[0] instanceof Object[]){
+//				return getKey((Object[])params[0]);
+//			}else{
+//				return (params[0] == null ? NULL_PARAM_KEY : params[0].hashCode());
+//			}
+//		}
+//		if (params.length == 0) {
+//			return NO_PARAM_KEY;
+//		}
+//		int hashCode = 17;
+//		for (Object object : params) {
+//			int tempCode = 0;
+//			if(object instanceof Object[]){
+//				tempCode = getKey((Object[])object);
+//			}else{
+//				tempCode = (object == null ? NULL_PARAM_KEY : object.hashCode());
+//			}
+//			hashCode = 31 * hashCode + tempCode;
+//		}
+//		return Integer.valueOf(hashCode);
+//	}
 }

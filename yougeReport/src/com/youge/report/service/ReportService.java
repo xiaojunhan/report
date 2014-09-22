@@ -120,12 +120,12 @@ public abstract class ReportService {
 		.append(getKeyByRequest(req));
 		String key = sb.toString();
 		logger.info("key=="+key);
-		ReportInfo ri = MemCacheUtil.get(key);
+		ReportInfo ri = MemCacheUtil.nsget(report,key);
 		if(ri==null){
 			init();
 			ri = getReportInfoOpr();
 			if(ri!=null){
-				MemCacheUtil.set(key, 30*60, ri);
+				MemCacheUtil.nsset(report,key, 30*60, ri);
 			}
 		}
 		setReportInfoCache(ri);
