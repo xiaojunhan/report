@@ -17,7 +17,7 @@ public class Test extends ReportService{
 	
 	@Override
 	public void init() throws Exception {
-		HttpServletRequest req = getRequest();
+//		HttpServletRequest req = getRequest();
 		String sql = "select id,address,ntime from test_report where id > ?";
 		String countsql = "select count(*) from test_report where id > ?";
 		Object[] params = {1};

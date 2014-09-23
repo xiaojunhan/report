@@ -5,7 +5,6 @@ import java.util.Date;
 import com.youge.report.model.ReportInfo;
 import com.youge.report.service.ReportService;
 import com.youge.report.util.DateUtil;
-import com.youge.report.util.StringUtil;
 
 public class ReportWuYeTotal extends ReportService{
 	private static final String[] head = {"日期","数量","积分"};
