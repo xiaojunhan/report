@@ -44,7 +44,11 @@
 	        		<c:if test="${! empty thead}">
 	        		<tr>
 	        		 	<c:forEach items="${thead}" var="th">
-	        				<th style="font-weight: bold;">${th}</th>
+	        				<th style="font-weight: bold;" 
+	        				<c:if test="${!empty th.width}">
+	        					width="${th.width}%"
+	        				</c:if>
+	        				>${th.name}</th>
 	        			</c:forEach>
 	        		</tr>
 	        		</c:if>

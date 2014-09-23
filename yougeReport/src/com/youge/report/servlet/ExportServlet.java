@@ -209,9 +209,10 @@ public class ExportServlet extends HttpServlet{
             if(head!=null && head.length>0){
             	headSize = 1;
             	for(int i=0;i<head.length;i++){
-        			 Label labelCell = new Label(i,2,head[i]);
+            		 String tempHead = head[i].split(",")[0];
+        			 Label labelCell = new Label(i,2,tempHead);
         			 sheet.addCell(labelCell);
-        			 cloSize[i] = head[i].getBytes(SIZE_CODE).length;
+        			 cloSize[i] = tempHead.getBytes(SIZE_CODE).length;
         		}
             }
             int bodySize = 0;

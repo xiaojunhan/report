@@ -9,6 +9,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.youge.report.model.PageInfo;
 import com.youge.report.model.ReportInfo;
+import com.youge.report.model.Thead;
 import com.youge.report.service.ReportService;
 import com.youge.report.service.ReportServiceFactory;
 import com.youge.report.util.PropertiesUtil;
@@ -56,7 +57,23 @@ public class ReportServlet extends HttpServlet{
 		}
 
 		req.setAttribute("title",rs.getTitle());
-		req.setAttribute("thead",rs.getThead());
+		String[] theadArr = rs.getThead();
+		if(theadArr!=null && theadArr.length>0){
+			Thead[] theadArr1 = new Thead[theadArr.length];
+			for(int i=0;i<theadArr.length;i++){
+				String[] tempArr = theadArr[i].split(",");
+				Thead thead = new Thead();
+				if(tempArr.length==2){
+					thead.setName(tempArr[0]);
+					thead.setWidth(tempArr[1]);
+				}
+				if(tempArr.length==1){
+					thead.setName(tempArr[0]);
+				}
+				theadArr1[i]=thead;
+			}
+			req.setAttribute("thead",theadArr1);
+		}
 		if(rs.getThead()!=null){
 			req.setAttribute("collen",rs.getThead().length);
 		}else{

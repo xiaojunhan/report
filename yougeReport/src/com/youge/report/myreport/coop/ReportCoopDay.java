@@ -14,7 +14,7 @@ import com.youge.report.util.DateUtil;
  *
  */
 public class ReportCoopDay extends ReportService{
-	private static final String[] head = {"投件数量","投件积分","取件数量","取件积分"};
+	private static final String[] head = {"投件数量,25","投件积分,25","取件数量,25","取件积分,25"};
 	@Override
 	protected void init() throws Exception {
 		String sql ="select tou_count,tou_fee,qu_count,qu_fee from coop_report where coop_comp_id = ?  and report_date = ?";

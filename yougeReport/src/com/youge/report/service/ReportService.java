@@ -32,7 +32,13 @@ public abstract class ReportService {
 	protected abstract void init()throws Exception ;
 	
 	public abstract String getTitle();//标题
-	
+	/** 
+	 *  名称,宽度
+	 *  宽度可以不填
+	 *  name,width
+	 *  1、{"投件数量,25","投件积分,25","取件数量,25","取件积分,25"}
+	 *  2、{"投件数量","投件积分","取件数量","取件积分"};
+	 *  **/
 	public abstract String[] getThead();//表头
 //	public abstract <T> List<T> getTbody();
 	/**

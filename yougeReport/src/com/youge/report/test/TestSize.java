@@ -11,6 +11,10 @@ public class TestSize {
 		System.out.println(titleSize);//10
 		titleSize = title.getBytes("GBK").length;
 		System.out.println(titleSize);//8
+		
+		
+		String[] tempArr = "ss".split(",");
+		System.out.println(tempArr.length);
 	}
 
 }

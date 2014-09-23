@@ -4,7 +4,7 @@
 <html>
     <head>
     <meta charset="UTF-8">
-    <title>welcome</title>
+    <title>出错啦</title>
     <link href="${path}/css/one.css" rel="stylesheet">
     <link href="${path}/css/report.css" rel="stylesheet">
     </head>
@@ -15,7 +15,7 @@
 		        <i class="iconfont" title="出错">&#xF045;</i>    
 		    </div>
 		    <div class="ui-tipbox-content-simple">
-		        <h3 class="ui-tipbox-title">${MESSAGE}</h3>
+		        <h3 class="ui-tipbox-title">${empty MESSAGE ? '出错啦' : MESSAGE}</h3>
 		    </div>
 		</div>
 	</div>
