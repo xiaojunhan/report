@@ -29,7 +29,9 @@
     		//}
     		//alert("height="+height);
     		var webserver = document.getElementById("webserver").value;
-    		document.getElementById("proxyFrame").src = webserver+"/html/proxy.html#"+height;
+    		if(webserver!=null && webserver!=""){
+    			document.getElementById("proxyFrame").src = webserver+"/html/proxy.html#"+height;
+    		}
     	}
     </script>
     </head>
@@ -102,7 +104,7 @@
 			</section>
 		</div>
 	</div>
-	<input id="webserver" type="hidden" value="${WEB_SERVER}">
+	<input id="webserver" type="hidden" value="${server}">
 	<iframe id="proxyFrame" width="0" height="0" style="display: none" src=""></iframe>
     </body>
 </html>

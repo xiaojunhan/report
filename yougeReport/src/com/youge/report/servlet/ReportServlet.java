@@ -13,6 +13,7 @@ import com.youge.report.model.Thead;
 import com.youge.report.service.ReportService;
 import com.youge.report.service.ReportServiceFactory;
 import com.youge.report.util.PropertiesUtil;
+import com.youge.report.util.StringUtil;
 /**
  * 报表主servlet
  * @author hanxj
@@ -98,8 +99,12 @@ public class ReportServlet extends HttpServlet{
 		req.setAttribute("pageCount",pi.getPageCount());//总页数
 		req.setAttribute("page",pi.getPage());//当前页
 		
-		String url = PropertiesUtil.get("WEB_SERVER");
-		req.setAttribute("WEB_SERVER",url);
+		String server = req.getParameter("server");
+//		String url = PropertiesUtil.get("WEB_SERVER");
+		if(StringUtil.isEmpty(server)){
+			server = PropertiesUtil.get("WEB_SERVER");
+		}
+		req.setAttribute("server",server);
 //		try {
 //			Thread.sleep(3000);
 //		} catch (InterruptedException e) {
