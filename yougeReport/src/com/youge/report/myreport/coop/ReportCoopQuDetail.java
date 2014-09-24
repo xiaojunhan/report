@@ -16,7 +16,7 @@ public class ReportCoopQuDetail extends ReportService{
 	protected void init() throws Exception {
 		String sql="select branch_name,box_no,gird_show_no,"+
 		"end_time,"+
-		"awb,kphone,uphone,uscore,status "+
+		"awb,kphone,uphone,uscore,status,ust "+
 		"from rent_info   "+
 		"where "+
 		"branch_id in (select branch_id "+
@@ -59,6 +59,7 @@ public class ReportCoopQuDetail extends ReportService{
 			tempList = new ArrayList<String[]>(list.size()<<2);
 			for(String[] arr:list){
 				String status = arr[8];
+				String ust = arr[9];
 				String[] tempArr = new String[head.length];
 				tempArr[0]=arr[0];
 				tempArr[1]=arr[1];
@@ -74,9 +75,15 @@ public class ReportCoopQuDetail extends ReportService{
 					tempArr[5]=arr[5];
 				}
 				if("2".equals(status)){
-					tempArr[6]=arr[7];
+					if("1".equals(ust)){
+						tempArr[6]=arr[7]+"(预充)";
+					}else if("2".equals(ust)){
+						tempArr[6]=arr[7]+"(投币)";
+					}else{
+						tempArr[6]="0";
+					}
 				}else{
-					tempArr[6]="";
+					tempArr[6]="0";
 				}
 				if("2".equals(status)){
 					tempArr[7]="用户取走";

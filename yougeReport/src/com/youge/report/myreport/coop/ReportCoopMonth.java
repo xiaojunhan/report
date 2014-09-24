@@ -14,10 +14,10 @@ import com.youge.report.util.StringUtil;
  *
  */
 public class ReportCoopMonth extends ReportService{
-	private static final String[] head = {"投件数量","投件积分","取件数量","取件积分"};
+	private static final String[] head = {"投件数量,20","投件积分,20","取件数量,20","取件积分(预充),20","取件积分(投币),20"};
 	@Override
 	protected void init() throws Exception {
-		String sql ="select sum(tou_count) as tou_count,sum(tou_fee) as tou_fee,sum(qu_count) as qu_count,sum(qu_fee) as qu_fee from coop_report where coop_comp_id = ?  and report_date like ?";
+		String sql ="select sum(tou_count) as tou_count,sum(tou_ofee) as tou_ofee,sum(qu_count) as qu_count,sum(qu_ofee) as qu_ofee,sum(qu_cfee) as qu_cfee from coop_report where coop_comp_id = ?  and report_date like ?";
 		String compId = getRequest().getParameter("compId");
 		String date = getRequest().getParameter("date");
 		date = date+"-__";
