@@ -2,9 +2,12 @@ package com.youge.report;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
+import javax.sql.DataSource;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -13,13 +16,27 @@ import com.alibaba.druid.filter.Filter;
 import com.alibaba.druid.filter.logging.Slf4jLogFilter;
 import com.alibaba.druid.pool.DruidDataSource;
 import com.youge.report.util.JdbcUtil;
+import com.youge.report.util.MemCacheUtil;
 import com.youge.report.util.PropertiesUtil;
 
-public class SystemInit implements ServletContextListener{
-	protected static final  Logger logger = LogManager.getLogger(SystemInit.class);
+public class SystemListener implements ServletContextListener{
+	protected static final  Logger logger = LogManager.getLogger(SystemListener.class);
 	@Override
 	public void contextDestroyed(ServletContextEvent arg0) {
-		
+		 logger.error("==contextDestroyed");
+		 System.out.println("==contextDestroyed");
+		 try{
+			 Map<String, DataSource> map = JdbcUtil.getDataSourceMap();
+			 if(map!=null && map.size()>0){
+				 for(Entry<String, DataSource> e:map.entrySet()){
+					 DruidDataSource ds =  (DruidDataSource)e.getValue();
+					 ds.close();
+				 }
+			 }
+		 }catch(Exception e){
+			 e.printStackTrace();
+		 }
+		 MemCacheUtil.shutdown();
 	}
 
 	@Override
