@@ -3,6 +3,7 @@ package com.youge.report.myreport.coop;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.Date;
+import java.util.List;
 
 import com.youge.report.model.ReportInfo;
 import com.youge.report.service.ReportService;
@@ -44,7 +45,17 @@ public class ReportCoopTouDetail extends ReportService{
 	}
 	@Override
 	protected ReportInfo getReportInfoOpr() {
-		return getReportInfoDb();
+		ReportInfo ri = getReportInfoDb();
+		if(ri==null){
+			return null;
+		}
+		List<String[]> list = ri.getReportList();
+		if(list!=null && list.size()>0){
+			for(String[] arr:list){
+				arr[3] = CoopUtil.getDescBySize(arr[3]);
+			}
+		}
+		return ri;
 	}
 	@Override
 	public String[] getTfoot() {
