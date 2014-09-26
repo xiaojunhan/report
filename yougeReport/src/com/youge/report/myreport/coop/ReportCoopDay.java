@@ -8,6 +8,7 @@ import java.util.List;
 import com.youge.report.model.ReportInfo;
 import com.youge.report.service.ReportService;
 import com.youge.report.util.DateUtil;
+import com.youge.report.util.StringUtil;
 /**
  * 合作网点日报表
  * @author hanxj
@@ -68,8 +69,17 @@ public class ReportCoopDay extends ReportService{
 		List<String[]> list = ri.getReportList();
 		if(list!=null && list.size()>0){
 			for(String[] arr:list){
-				arr[0] = getAlink(tou.toString(), arr[0]);
-				arr[2] = getAlink(qu.toString(), arr[2]);
+				for(int i=0;i<arr.length;i++){
+					if(StringUtil.isEmpty(arr[i])){
+						arr[i]="0";
+					}
+				}
+				if(!"0".equals(arr[0])){
+					arr[0] = getAlink(tou.toString(), arr[0]);
+				}
+				if(!"0".equals(arr[2])){
+					arr[2] = getAlink(qu.toString(), arr[2]);
+				}
 			}
 		}
 		return ri;
