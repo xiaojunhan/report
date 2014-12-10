@@ -34,6 +34,7 @@ import com.youge.report.model.ReportInfo;
 import com.youge.report.service.ReportService;
 import com.youge.report.service.ReportServiceFactory;
 import com.youge.report.util.NumberUtil;
+import com.youge.report.util.RegularUtil;
 import com.youge.report.util.StringUtil;
 /**
  * 用于导出excel
@@ -221,9 +222,11 @@ public class ExportServlet extends HttpServlet{
             	for(int i=0;i<bodyList.size();i++){
             		String[] arr = bodyList.get(i);
             		for(int j=0;j<arr.length;j++){
-            			 Label labelCell = new Label(j, i+2+headSize, arr[j]);
+            			 //去除 A标签
+            			 String value = RegularUtil.removea(arr[j]);
+            			 Label labelCell = new Label(j, i+2+headSize,value);
             			 sheet.addCell(labelCell);
-            			 int tempSize = arr[j].getBytes(SIZE_CODE).length;
+            			 int tempSize = value.getBytes(SIZE_CODE).length;
             			 if(tempSize > cloSize[j]){
             				 cloSize[j] = tempSize;
             			 }
